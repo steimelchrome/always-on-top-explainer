@@ -43,10 +43,6 @@ const utilityWindow = window.open(
 
 Web developers need a reliable, synchronous way to detect support for `alwaysOnTop` so they can gracefully fall back to standard windows or inline UI modals on unsupported browsers.
 
-We propose two complementary mechanisms for feature detection:
-
-### 4.1 Prototype Property Check (Primary)
-
 The most straightforward and standard-aligned method is ensuring the `alwaysOnTop` property exists on the `Window.prototype` (and consequently, on any `window` instance). This allows developers to check for support without actually opening a physical window.
 
 ```javascript
@@ -56,18 +52,6 @@ if ('alwaysOnTop' in Window.prototype) {
 } else {
   // Fallback behavior (e.g., opening a standard window or an inline overlay)
   window.open('/tool', 'Tool', 'width=300,height=200');
-}
-
-```
-
-### 4.2 Modern `windowFeatures` Object Check (Alternative)
-
-As the web platform moves toward passing a dictionary/object instead of a comma-separated string to `window.open()`, browsers can natively ignore unsupported object keys. By exposing a static `supportedFeatures` list or allowing dictionary validation, developers can check feature compatibility directly:
-
-```javascript
-// Checking if the token is recognized in a modern windowFeatures dictionary
-if (window.open.supportedFeatures?.includes('alwaysOnTop')) {
-  // Safe to request always-on-top behavior
 }
 
 ```
