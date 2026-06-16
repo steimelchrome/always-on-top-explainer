@@ -33,27 +33,44 @@ const utilityWindow = window.open(
 
 ### Expected Behavior
 
-* If `true`, the OS-level window manager is instructed to keep this window on top of others.
+* **Permission Requirement:** This capability is gated behind the `window-management` permission. If this permission has not been granted by the user, the `alwaysOnTop` request is silently ignored, and a standard popup window is created instead.
+* If `true` and the required permission is granted, the OS-level window manager is instructed to keep this window pinned above other non-always-on-top windows.
 * If the user manually minimizes the window, it should obey.
 * The attribute could be read-only after creation, or mutable via a future property (e.g., `window.alwaysOnTop = false`).
 
 ---
 
-## 4. Feature Detection
+## 4. Feature & Permission Detection
 
-Web developers need a reliable, synchronous way to detect support for `alwaysOnTop` so they can gracefully fall back to standard windows or inline UI modals on unsupported browsers.
+Web developers need a reliable way to detect support for `alwaysOnTop` and verify permission status so they can gracefully fall back to standard windows or inline UI modals on unsupported environments or when permissions are denied.
 
-The most straightforward and standard-aligned method is ensuring the `alwaysOnTop` property exists on the `Window.prototype` (and consequently, on any `window` instance). This allows developers to check for support without actually opening a physical window.
+1. **Feature Detection:** Developers can verify synchronous support for the `alwaysOnTop` attribute by checking for its existence on the `Window.prototype` without opening a window.
+2. **Permission Verification:** Because the feature requires user consent, developers can asynchronously query the `window-management` permission state using the Permissions API.
 
 ```javascript
-if ('alwaysOnTop' in Window.prototype) {
-  // Browser supports the always-on-top capability
-  window.open('/tool', 'Tool', 'width=300,height=200,alwaysOnTop=true');
-} else {
-  // Fallback behavior (e.g., opening a standard window or an inline overlay)
-  window.open('/tool', 'Tool', 'width=300,height=200');
-}
+async function openUtilityWindow() {
+  // 1. Feature Detection
+  if (!('alwaysOnTop' in Window.prototype)) {
+    // Fallback: browser lacks support for the alwaysOnTop hint
+    window.open('/tool', 'Tool', 'width=300,height=200');
+    return;
+  }
 
+  // 2. Permission Detection
+  try {
+    const permissionStatus = await navigator.permissions.query({ name: 'window-management' });
+    if (permissionStatus.state === 'granted') {
+      // Permission granted: open as an always-on-top window
+      window.open('/tool', 'Tool', 'width=300,height=200,alwaysOnTop=true');
+    } else {
+      // Fallback: permission denied (or prompt needed)
+      window.open('/tool', 'Tool', 'width=300,height=200');
+    }
+  } catch (e) {
+    // Graceful fallback for browsers without Permissions API support for this permission
+    window.open('/tool', 'Tool', 'width=300,height=200');
+  }
+}
 ```
 
 ---
@@ -63,7 +80,7 @@ if ('alwaysOnTop' in Window.prototype) {
 Because an "always on top" window can easily be abused for malicious purposes (e.g., spoofing system UI, un-dismissible ads, phishing), strict mitigations are required.
 
 * **Transient User Activation:** `window.open(..., 'alwaysOnTop=true')` must require a "sticky" or transient user gesture (like a click or keypress). It cannot be triggered automatically on page load.
-* **Permission Prompt / Indicator:** Browsers should display a clear, un-spoofable UI indicator showing that the window is pinned. The browser may also require explicit user permission via a prompt.
+* **Permission Prompt & Integration:** Access to this capability relies on the established `window-management` permission API. Browsers should also display a clear, un-spoofable UI indicator (such as an icon or banner in the window frame) ensuring the user is always aware that the window is pinned to the top of the display.
 * **Focus Restrictions:** To prevent "focus stealing" loops, an `alwaysOnTop` window should not be able to aggressively force focus back to itself if the user clicks away.
 * **Easy Dismissal:** The user must always have an explicit, browser-controlled way to unpin or close the window (e.g., a standard window close button or an "unpin" toggle in the browser chrome).
 
