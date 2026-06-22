@@ -2,18 +2,17 @@
 
 ## 1. Introduction & Abstract
 
-Currently, web applications cannot create windows that stay above other desktop applications. This explainer proposes a new boolean option for `window.open()`, called `alwaysOnTop`. When set to `true`, the browser requests that the operating system keep the newly created window pinned above other non-always-on-top windows.
+Currently, web applications cannot create standalone, independent windows that stay above other desktop applications. While the `Document Picture-in-Picture API` does allow for always-on-top windows, they are strictly tied to the lifecycle of the initiating tab and close automatically if that tab navigates or closes. This explainer proposes a new boolean option for `window.open()`, called `alwaysOnTop`. When set to `true`, the browser requests that the operating system keep the newly created window pinned above other non-always-on-top windows, enabling fully standalone, always-on-top utility windows that can outlive the tab that opened them.
 
 ---
 
 ## 2. Use Cases
 
-There are several legitimate productivity and utility use cases for this feature:
+There are several productivity and utility use cases for this feature:
 
-* **Picture-in-Picture (PiP) for Custom Content:** While the `Document Picture-in-Picture API` exists, it is highly restricted. This option would allow full-featured, standalone utility windows (like a video player, a stock ticker, or a calculator) to remain visible.
 * **Video Conferencing Controls:** A mini-controller window for a meeting (mute, unmute, end call) that stays visible while the user takes notes in another native app.
 * **Developer Tools / Dashboards:** Live-reloading logs or performance monitors that developers want to keep an eye on while coding in their IDE.
-* **Persistent Note-Taking / Utilities:** A standalone notepad or scratchpad that remains visible while working in other applications. Crucially, unlike the `Document Picture-in-Picture API` (where the auxiliary window is strictly tied to the initiating tab and automatically closes if that tab navigates or closes), an `alwaysOnTop` window can remain open independently, outliving its opener.
+* **Persistent Note-Taking / Utilities:** A standalone notepad or scratchpad that remains visible while working in other applications.
 
 ---
 
@@ -79,8 +78,8 @@ async function openUtilityWindow() {
 
 Because an "always on top" window can easily be abused for malicious purposes (e.g., spoofing system UI, un-dismissible ads, phishing), strict mitigations are required.
 
-* **Transient User Activation:** `window.open(..., 'alwaysOnTop=true')` must require a "sticky" or transient user gesture (like a click or keypress). It cannot be triggered automatically on page load.
-* **Permission Prompt & Integration:** Access to this capability relies on the established `window-management` permission API. Browsers should also display a clear, un-spoofable UI indicator (such as an icon or banner in the window frame) ensuring the user is always aware that the window is pinned to the top of the display.
+* **Transient User Activation:** `window.open(..., 'alwaysOnTop=true')` must require a user gesture (like a click or keypress). It cannot be triggered automatically on page load.
+* **Permission Prompt & Integration:** Access to this capability relies on the established `window-management` permission API.
 * **Focus Restrictions:** To prevent "focus stealing" loops, an `alwaysOnTop` window should not be able to aggressively force focus back to itself if the user clicks away.
 * **Easy Dismissal:** The user must always have an explicit, browser-controlled way to unpin or close the window (e.g., a standard window close button or an "unpin" toggle in the browser chrome).
 
@@ -89,4 +88,4 @@ Because an "always on top" window can easily be abused for malicious purposes (e
 ## 6. Alternatives Considered
 
 * **Document Picture-in-Picture API:** While similar, PiP windows have strict limitations regarding size, navigation, and capabilities. `alwaysOnTop` offers a true standard window experience.
-* **Native Apps (Electron/NW.js):** Currently, developers are forced to wrap web apps in Electron just to get access to `win.setAlwaysOnTop(true)`. Bringing this to the web bridges a massive capability gap.
+* **Native Apps (Electron/NW.js):** Currently, developers are forced to wrap web apps in Electron just to get access to `win.setAlwaysOnTop(true)`. Bringing this to the web bridges a capability gap for developers.
