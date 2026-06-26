@@ -45,7 +45,7 @@ console.log(utilityWindow.alwaysOnTop); // true (if successfully opened as alway
 
 ## 4. Feature & Permission Detection
 
-Exposing the read-only `alwaysOnTop` property on the `Window` interface elegantly addresses two critical detection challenges for developers:
+Exposing the read-only `alwaysOnTop` property on the `Window` interface addresses two critical detection challenges for developers:
 
 1. **Feature Detection:** Developers can synchronously check for browser API support by verifying the existence of `'alwaysOnTop' in Window.prototype`.
 2. **State Verification:** A script running inside the new popup (or the opening application holding a reference to it) can confidently determine if the window was legitimately successfully opened with the always-on-top capability by checking the `window.alwaysOnTop` boolean.
