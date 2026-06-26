@@ -34,6 +34,7 @@ const utilityWindow = window.open(
 
 * **Permission Requirement:** This capability is gated behind the `window-management` permission. If this permission has not been granted by the user, the `alwaysOnTop` request is silently ignored, and a standard popup window is created instead.
 * If `true` and the required permission is granted, the OS-level window manager is instructed to keep this window pinned above other non-always-on-top windows.
+* **UA-Defined Limits:** To preserve usability, browsers (User Agents) may enforce implementation-specific limits. For example, UAs may restrict origins to a single active `alwaysOnTop` window at a time, or make it mutually exclusive with other types of Picture-in-Picture (PiP) windows.
 * If the user manually minimizes the window, it should obey.
 * The attribute could be read-only after creation, or mutable via a future property (e.g., `window.alwaysOnTop = false`).
 
@@ -80,6 +81,7 @@ Because an "always on top" window can easily be abused for malicious purposes (e
 
 * **Transient User Activation:** `window.open(..., 'alwaysOnTop=true')` must require a user gesture (like a click or keypress). It cannot be triggered automatically on page load.
 * **Permission Prompt & Integration:** Access to this capability relies on the established `window-management` permission API.
+* **Move & Resize Restrictions:** To prevent abuse scenarios like a window that programmatically "follows the mouse" across the screen, synchronous APIs that manipulate window position and bounds (e.g., `moveTo`, `moveBy`, `resizeTo`, `resizeBy`) must be restricted. Similar to the existing restrictions on Document PiP windows, these calls should require a transient user gesture or be blocked by the UA.
 * **Focus Restrictions:** To prevent "focus stealing" loops, an `alwaysOnTop` window should not be able to aggressively force focus back to itself if the user clicks away.
 * **Easy Dismissal:** The user must always have an explicit, browser-controlled way to unpin or close the window (e.g., a standard window close button or an "unpin" toggle in the browser chrome).
 
